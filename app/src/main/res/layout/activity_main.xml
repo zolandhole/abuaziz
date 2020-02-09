@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@drawable/gradient"
+    android:padding="10dp"
+    tools:context=".MainActivity">
+
+    <include
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/judul_kajian"
+        layout="@layout/view_player" />
+
+    <View
+        android:id="@+id/separator"
+        android:layout_marginTop="8dp"
+        android:layout_below="@+id/judul_kajian"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/colorPrimary"/>
+
+    <include
+        android:id="@+id/view_sukses"
+        android:layout_marginTop="8dp"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_below="@id/separator"
+        layout="@layout/view_sukses" />
+
+    <include
+        android:visibility="gone"
+        android:id="@+id/view_offline"
+        android:layout_marginTop="8dp"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_below="@id/judul_kajian"
+        layout="@layout/view_offline" />
+
+    <androidx.cardview.widget.CardView
+        android:visibility="gone"
+        android:id="@+id/cv_nointernet"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/judul_kajian"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/darkred"
+        app:cardCornerRadius="20dp">
+
+        <ImageView
+            android:layout_gravity="start"
+            android:padding="10dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/nowifi"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/tv_messageError"
+            android:paddingStart="40dp"
+            android:paddingEnd="10dp"
+            android:layout_gravity="end"
+            android:padding="10dp"
+            android:layout_below="@id/judul_kajian"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/robotocondensed"
+            android:textSize="16sp"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:text="@string/tidak_ada_koneksi_internert" />
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>
