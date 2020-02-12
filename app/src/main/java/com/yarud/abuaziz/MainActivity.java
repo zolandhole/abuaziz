@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -130,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                 "https://cdn.pixabay.com/photo/2017/09/30/15/10/pizza-2802332_640.jpg"
         );
         recyclerViewItems.add(header);
+
         String[] profileImage = {"https://cdn.pixabay.com/photo/2016/11/18/17/42/barbecue-1836053_640.jpg",
                 "https://cdn.pixabay.com/photo/2016/07/11/03/23/chicken-rice-1508984_640.jpg",
                 "https://cdn.pixabay.com/photo/2017/03/30/08/10/chicken-intestine-2187505_640.jpg",
@@ -140,11 +140,11 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         String[] waktu = {"j","a","m","e","d"};
         String[] pesan = {"Tunduh", "pisan", "euy", "hayang", "sare"};
         String[] id_login = {"Tunduh", "pisan", "euy", "hayang", "sare"};
-
         for (int i = 0; i < profileImage.length; i++) {
             ModelChat chat = new ModelChat(pesan[i],waktu[i],jam[i],namaPengirim[i],profileImage[i],id_login[i]);
             recyclerViewItems.add(chat);
         }
+
         return recyclerViewItems;
     }
 

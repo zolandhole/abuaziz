@@ -39,11 +39,9 @@ public class AdapterChat extends RecyclerView.Adapter {
         if (viewType == HEADER_ITEM){
             row = inflater.inflate(R.layout.layout_header, parent, false);
             return new HeaderHolder(row);
-        } else if (viewType == CHAT_ITEM){
+        } else {
             row = inflater.inflate(R.layout.layout_chat, parent, false);
             return new ChatHolder(row);
-        } else {
-            return null;
         }
     }
 
