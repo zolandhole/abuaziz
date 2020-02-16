@@ -4,6 +4,7 @@
     android:orientation="vertical"
     android:id="@+id/layout_recycler"
     android:background="@drawable/back_putih"
+    android:layout_marginBottom="8dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 

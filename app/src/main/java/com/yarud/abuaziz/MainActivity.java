@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -47,14 +48,15 @@ import com.yarud.abuaziz.utils.RecyclerViewItem;
 import com.yarud.abuaziz.utils.ResponServer;
 import com.yarud.abuaziz.utils.ResponShoutcast;
 import com.yarud.abuaziz.utils.ServiceAddress;
-import com.yarud.abuaziz.utils.Space;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements InternetConnectivityListener {
     private static final String TAG = "MainActivity";
@@ -73,6 +75,9 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private RelativeLayout titlekajian;
     private boolean doubleBackToExitPressedOnce = false;
     private DBHandler dbHandler;
+    private String ID_LOGIN, JUDUL_KAJIAN, PEMATERI;
+    private LinearLayout kirim_pesan;
+    private ModelHeader modelHeader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         view_sukses = findViewById(R.id.view_sukses);
         view_offline = findViewById(R.id.view_offline);
         titlekajian = findViewById(R.id.titlekajian);
-
+        kirim_pesan = findViewById(R.id.kirim_pesan);
         dbHandler = new DBHandler(this);
 
         InternetAvailabilityChecker.init(this);
@@ -101,6 +106,9 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
 
         daftarkanBroadcast();
         playStreaming();
+
+        modelHeader = new ModelHeader("", "", null);
+        initRecyclerView();
 
         btn_player.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -121,17 +129,12 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private void initRecyclerView() {
         RecyclerView recyclerView = findViewById(R.id.recycler_chat);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.addItemDecoration(new Space(20));
         recyclerView.setAdapter(new AdapterChat(crateListData(), this, dbHandler));
     }
 
     private List<RecyclerViewItem> crateListData() {
         List<RecyclerViewItem> recyclerViewItems = new ArrayList<>();
-        ModelHeader header = new ModelHeader(
-                "YADI RUDIYANSAH",
-                "yadi.rudiyansah@hariff.com",
-                "https://cdn.pixabay.com/photo/2017/09/30/15/10/pizza-2802332_640.jpg"
-        );
+        ModelHeader header = modelHeader;
         recyclerViewItems.add(header);
 
         String[] profileImage = {"https://cdn.pixabay.com/photo/2016/11/18/17/42/barbecue-1836053_640.jpg",
@@ -148,7 +151,6 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
             ModelChat chat = new ModelChat(pesan[i],waktu[i],jam[i],namaPengirim[i],profileImage[i],id_login[i]);
             recyclerViewItems.add(chat);
         }
-
         return recyclerViewItems;
     }
 
@@ -166,8 +168,58 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     @Override
     protected void onResume() {
         super.onResume();
-        initRecyclerView();
+        getCurrentUser();
         getJudulKajian();
+    }
+
+    private void getCurrentUser() {
+        ID_LOGIN = checkUserOnDB();
+        if (ID_LOGIN == null){
+            kirim_pesan.setVisibility(View.GONE);
+        } else {
+            kirim_pesan.setVisibility(View.VISIBLE);
+            getProfileUntukHeader();
+        }
+    }
+
+    private void getProfileUntukHeader() {
+        List<String> list = new ArrayList<>();
+        list.add(ID_LOGIN);
+        HandlerServer handlerServer = new HandlerServer(this, ServiceAddress.GETPROFILE);
+        synchronized (this){
+            handlerServer.sendDataToServer(new ResponServer() {
+                @Override
+                public void gagal(String result) {
+                    dbHandler.deleteDB();
+                    initRecyclerView();
+                }
+
+                @Override
+                public void berhasil(JSONArray jsonArray) {
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        try {
+                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                            modelHeader = new ModelHeader(
+                                    jsonObject.getString("nama"),
+                                    jsonObject.getString("email"),
+                                    jsonObject.getString("photo")
+                            );
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    initRecyclerView();
+                }
+            }, list);
+        }
+    }
+
+    private String checkUserOnDB(){
+        ArrayList<HashMap<String, String>> userDB = dbHandler.getUser(1);
+        for (Map<String, String> map : userDB){
+            ID_LOGIN = map.get("id_login");
+        }
+        return ID_LOGIN;
     }
 
     private void playStreaming() {
@@ -233,6 +285,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         @Override
         protected void onPreExecute() {
             Log.e(TAG, "onPreExecute: " + streamingURL);
+            getJudulKajian();
             super.onPreExecute();
         }
 
@@ -269,6 +322,8 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         Bundle bundle = new Bundle();
         bundle.putString("url", streamingURL);
         bundle.putString("name", "MA'HAD ABU AZIZ");
+        bundle.putString("judul_kajian", JUDUL_KAJIAN);
+        bundle.putString("pemateri", PEMATERI);
         Intent intent = new Intent(MainActivity.this, StreamingService.class);
         intent.putExtras(bundle);
         startService(intent);
@@ -296,8 +351,10 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                         try {
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 object = jsonArray.getJSONObject(i);
-                                tv_titlekajian.setText(object.getString("judul_kajian"));
-                                tv_pemateri.setText(object.getString("pemateri"));
+                                JUDUL_KAJIAN = object.getString("judul_kajian");
+                                PEMATERI = object.getString("pemateri");
+                                tv_titlekajian.setText(JUDUL_KAJIAN);
+                                tv_pemateri.setText(PEMATERI);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();

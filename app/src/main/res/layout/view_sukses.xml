@@ -12,7 +12,6 @@
     <androidx.recyclerview.widget.RecyclerView
         android:layout_marginTop="8dp"
         android:layout_below="@id/titlekajian"
-        android:layout_marginBottom="8dp"
         android:id="@+id/recycler_chat"
         android:layout_above="@+id/kirim_pesan"
         android:layout_width="match_parent"

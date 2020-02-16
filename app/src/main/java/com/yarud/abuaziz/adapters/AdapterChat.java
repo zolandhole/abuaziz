@@ -81,7 +81,7 @@ public class AdapterChat extends RecyclerView.Adapter {
                 if (modelHeader.getIMAGEURL() != null){
                     Glide.with(context).load(modelHeader.getIMAGEURL()).placeholder(R.drawable.ic_account).into(headerHolder.profilePhoto);
                 }
-                headerHolder.namaProfile.setText(modelHeader.getEMAILPROFILE());
+                headerHolder.namaProfile.setText(modelHeader.getNAMAPROFILE());
                 headerHolder.emailProfile.setText(modelHeader.getEMAILPROFILE());
             }
         } else {
@@ -157,7 +157,6 @@ public class AdapterChat extends RecyclerView.Adapter {
     private String checkUserOnDB(){
         ArrayList<HashMap<String, String>> userDB = dbHandler.getUser(1);
         for (Map<String, String> map : userDB){
-            Log.e(TAG, "checkUserOnDB: " + map.get("id_login"));
             ID_LOGIN = map.get("id_login");
         }
         return ID_LOGIN;

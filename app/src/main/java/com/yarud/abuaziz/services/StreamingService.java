@@ -39,7 +39,6 @@ public class StreamingService extends Service implements
     private BroadcastReceiver broadcastReceiver;
     private static final String TAG = "StreamingService";
     private NotificationManagerCompat notificationManagerCompat;
-    private String urlStreaming;
 
     @Override
     public void onCreate() {
@@ -114,15 +113,17 @@ public class StreamingService extends Service implements
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         initIfPhoneCall();
-        String nama;
+        String nama, judul_kajian, pemateri;
         if (intent!=null){
             Log.e(TAG, "onStartCommand: Streaming Service " + Objects.requireNonNull(intent.getExtras()).getString("url"));
             nama = Objects.requireNonNull(intent.getExtras()).getString("name");
-            showNotification(nama);
+            judul_kajian = intent.getExtras().getString("judul_kajian");
+            pemateri = intent.getExtras().getString("pemateri");
+            showNotification(nama, judul_kajian, pemateri);
             mediaPlayer.reset();
             if (!mediaPlayer.isPlaying()){
                 try {
-                    urlStreaming = intent.getExtras().getString("url");
+                    String urlStreaming = intent.getExtras().getString("url");
                     mediaPlayer.setDataSource(urlStreaming);
                     mediaPlayer.prepareAsync();
                 } catch (IOException e){
@@ -133,7 +134,7 @@ public class StreamingService extends Service implements
         return START_STICKY;
     }
 
-    private void showNotification(String nama){
+    private void showNotification(String nama, String judul_kajian, String pemateri){
         Intent intentNotification = new Intent(this, MainActivity.class);
         intentNotification.putExtra("streamingRadio", "streamingRadio");
         intentNotification.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -148,8 +149,8 @@ public class StreamingService extends Service implements
                 .setTicker("Mendengarkan " + nama)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setContentTitle("Judul Kajian")
-                .setContentText("Nama Asatid")
+                .setContentTitle(judul_kajian)
+                .setContentText(pemateri)
                 .setContentIntent(pendingIntentOpenApp)
                 .addAction(android.R.drawable.ic_delete, "HENTIKAN", pendingIntentExit);
 
