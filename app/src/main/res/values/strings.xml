@@ -21,4 +21,9 @@
     <string name="note_unregistered">Daftarkan Diri anda di Aplikasi Kajian Online Streaming Ma\'had Abu Aziz untuk berinteraksi secara langsung dengan Asatidz dengan mengklik tombol daftar dibawah</string>
     <string name="daftar">Daftar</string>
     <string name="ganti_user">Ganti User</string>
+    <string name="masuk_dengan_akun_facebook">Masuk dengan Akun Facebook</string>
+    <string name="atau">atau</string>
+    <string name="masuk_dengan_akun_google">Masuk dengan Akun Google</string>
+    <string name="facebook_app_id">487230878888052</string> <string name="fb_login_protocol_scheme">fb487230878888052</string>
+
 </resources>

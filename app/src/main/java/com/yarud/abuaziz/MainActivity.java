@@ -41,6 +41,7 @@ import com.yarud.abuaziz.adapters.AdapterChat;
 import com.yarud.abuaziz.models.ModelChat;
 import com.yarud.abuaziz.models.ModelHeader;
 import com.yarud.abuaziz.services.StreamingService;
+import com.yarud.abuaziz.utils.DBHandler;
 import com.yarud.abuaziz.utils.HandlerServer;
 import com.yarud.abuaziz.utils.RecyclerViewItem;
 import com.yarud.abuaziz.utils.ResponServer;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private ConstraintLayout view_offline;
     private RelativeLayout titlekajian;
     private boolean doubleBackToExitPressedOnce = false;
+    private DBHandler dbHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,13 +93,15 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         view_offline = findViewById(R.id.view_offline);
         titlekajian = findViewById(R.id.titlekajian);
 
+        dbHandler = new DBHandler(this);
+
         InternetAvailabilityChecker.init(this);
         InternetAvailabilityChecker mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();
         mInternetAvailabilityChecker.addInternetConnectivityListener(this);
 
         daftarkanBroadcast();
-        initRecyclerView();
         playStreaming();
+
         btn_player.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -118,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         RecyclerView recyclerView = findViewById(R.id.recycler_chat);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new Space(20));
-        recyclerView.setAdapter(new AdapterChat(crateListData(), this));
+        recyclerView.setAdapter(new AdapterChat(crateListData(), this, dbHandler));
     }
 
     private List<RecyclerViewItem> crateListData() {
@@ -162,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     @Override
     protected void onResume() {
         super.onResume();
+        initRecyclerView();
         getJudulKajian();
     }
 
@@ -365,6 +370,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     public void onBackPressed() {
         if (doubleBackToExitPressedOnce) {
             super.onBackPressed();
+            finish();
             return;
         }
         this.doubleBackToExitPressedOnce = true;
