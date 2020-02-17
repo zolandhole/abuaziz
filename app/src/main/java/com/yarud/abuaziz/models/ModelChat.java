@@ -3,14 +3,12 @@ package com.yarud.abuaziz.models;
 import com.yarud.abuaziz.utils.RecyclerViewItem;
 
 public class ModelChat extends RecyclerViewItem {
-    private String id, pesan, waktu, jam, id_login, photo, pengirim;
+    private String id, pesan, jam, photo, pengirim;
 
-    public ModelChat(String id, String pesan, String waktu, String jam, String id_login, String photo, String pengirim) {
+    public ModelChat(String id, String pesan, String jam, String photo, String pengirim) {
         this.id = id;
         this.pesan = pesan;
-        this.waktu = waktu;
         this.jam = jam;
-        this.id_login = id_login;
         this.photo = photo;
         this.pengirim = pengirim;
     }
@@ -21,16 +19,8 @@ public class ModelChat extends RecyclerViewItem {
         return pesan;
     }
 
-    public String getWaktu() {
-        return waktu;
-    }
-
     public String getJam() {
         return jam;
-    }
-
-    public String getId_login() {
-        return id_login;
     }
 
     public String getPhoto() {

@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         playStreaming();
 
         modelHeader = new ModelHeader("", "", null);
-        modelChat = new ModelChat("","","","","",null,"");
+        modelChat = new ModelChat("","","",null,"");
         initRecyclerView();
 
         btn_player.setOnClickListener(new View.OnClickListener() {
@@ -140,18 +140,6 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         ModelHeader header = modelHeader;
         recyclerViewItems.add(header);
 
-//        String[] profileImage = {"https://cdn.pixabay.com/photo/2016/11/18/17/42/barbecue-1836053_640.jpg"};
-//        String[] id = {""};
-//        String[] namaPengirim = {"Yadi"};
-//        String[] jam = {"j"};
-//        String[] waktu = {"j"};
-//        String[] pesan = {"Tunduh"};
-//        String[] id_login = {"Tunduh"};
-//        for (int i = 0; i < profileImage.length; i++) {
-//            ModelChat chat = new ModelChat(id[i], pesan[i],waktu[i],jam[i],namaPengirim[i],profileImage[i],id_login[i]);
-//            recyclerViewItems.add(chat);
-//        }
-//        recyclerViewItems.add(modelChat);
         if (jsonArrayChat != null){
             for (int i = 0; i < jsonArrayChat.length(); i++) {
                 try {
@@ -159,21 +147,19 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                     modelChat = new ModelChat(
                             jsonObject.getString("id"),
                             jsonObject.getString("pesan"),
-                            jsonObject.getString("waktu"),
                             jsonObject.getString("jam"),
-                            jsonObject.getString("id_login"),
                             jsonObject.getString("photo"),
                             jsonObject.getString("pengirim")
                     );
                     recyclerViewItems.add(modelChat);
                 } catch (JSONException e) {
-                    modelChat = new ModelChat("","","","","",null,"");
+                    modelChat = new ModelChat("","","",null,"");
                     recyclerViewItems.add(modelChat);
                     e.printStackTrace();
                 }
             }
         } else {
-            modelChat = new ModelChat("","","","","",null,"");
+            modelChat = new ModelChat("","","",null,"");
             recyclerViewItems.add(modelChat);
         }
 
