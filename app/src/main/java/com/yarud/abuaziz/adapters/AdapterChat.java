@@ -90,7 +90,7 @@ public class AdapterChat extends RecyclerView.Adapter {
             if (modelChat.getPhoto() != null){
                 Glide.with(context).load(modelChat.getPhoto()).placeholder(R.drawable.ic_account).into(chatHolder.streaming_photo);
             }
-            chatHolder.streaming_dari.setText(modelChat.getId_login());
+            chatHolder.streaming_dari.setText(modelChat.getPengirim());
             chatHolder.streaming_jam.setText(modelChat.getJam());
             chatHolder.streaming_pesan.setText(modelChat.getPesan());
         }

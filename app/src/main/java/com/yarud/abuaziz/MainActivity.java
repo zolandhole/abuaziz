@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private String ID_LOGIN, JUDUL_KAJIAN, PEMATERI;
     private LinearLayout kirim_pesan;
     private ModelHeader modelHeader;
+    private ModelChat modelChat;
+    private JSONArray jsonArrayChat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         playStreaming();
 
         modelHeader = new ModelHeader("", "", null);
+        modelChat = new ModelChat("","","","","",null,"");
         initRecyclerView();
 
         btn_player.setOnClickListener(new View.OnClickListener() {
@@ -137,20 +140,43 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         ModelHeader header = modelHeader;
         recyclerViewItems.add(header);
 
-        String[] profileImage = {"https://cdn.pixabay.com/photo/2016/11/18/17/42/barbecue-1836053_640.jpg",
-                "https://cdn.pixabay.com/photo/2016/07/11/03/23/chicken-rice-1508984_640.jpg",
-                "https://cdn.pixabay.com/photo/2017/03/30/08/10/chicken-intestine-2187505_640.jpg",
-                "https://cdn.pixabay.com/photo/2017/02/15/15/17/meal-2069021_640.jpg",
-                "https://cdn.pixabay.com/photo/2017/06/01/07/15/food-2362678_640.jpg"};
-        String[] namaPengirim = {"Yadi", "Rudi", "Yansah", "Surampak", "Sakosoy"};
-        String[] jam = {"j","a","m","e","d"};
-        String[] waktu = {"j","a","m","e","d"};
-        String[] pesan = {"Tunduh", "pisan", "euy", "hayang", "sare"};
-        String[] id_login = {"Tunduh", "pisan", "euy", "hayang", "sare"};
-        for (int i = 0; i < profileImage.length; i++) {
-            ModelChat chat = new ModelChat(pesan[i],waktu[i],jam[i],namaPengirim[i],profileImage[i],id_login[i]);
-            recyclerViewItems.add(chat);
+//        String[] profileImage = {"https://cdn.pixabay.com/photo/2016/11/18/17/42/barbecue-1836053_640.jpg"};
+//        String[] id = {""};
+//        String[] namaPengirim = {"Yadi"};
+//        String[] jam = {"j"};
+//        String[] waktu = {"j"};
+//        String[] pesan = {"Tunduh"};
+//        String[] id_login = {"Tunduh"};
+//        for (int i = 0; i < profileImage.length; i++) {
+//            ModelChat chat = new ModelChat(id[i], pesan[i],waktu[i],jam[i],namaPengirim[i],profileImage[i],id_login[i]);
+//            recyclerViewItems.add(chat);
+//        }
+//        recyclerViewItems.add(modelChat);
+        if (jsonArrayChat != null){
+            for (int i = 0; i < jsonArrayChat.length(); i++) {
+                try {
+                    JSONObject jsonObject = jsonArrayChat.getJSONObject(i);
+                    modelChat = new ModelChat(
+                            jsonObject.getString("id"),
+                            jsonObject.getString("pesan"),
+                            jsonObject.getString("waktu"),
+                            jsonObject.getString("jam"),
+                            jsonObject.getString("id_login"),
+                            jsonObject.getString("photo"),
+                            jsonObject.getString("pengirim")
+                    );
+                    recyclerViewItems.add(modelChat);
+                } catch (JSONException e) {
+                    modelChat = new ModelChat("","","","","",null,"");
+                    recyclerViewItems.add(modelChat);
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            modelChat = new ModelChat("","","","","",null,"");
+            recyclerViewItems.add(modelChat);
         }
+
         return recyclerViewItems;
     }
 
@@ -168,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     @Override
     protected void onResume() {
         super.onResume();
+        getDataChatting();
         getCurrentUser();
         getJudulKajian();
     }
@@ -209,6 +236,25 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                         }
                     }
                     initRecyclerView();
+                }
+            }, list);
+        }
+    }
+
+    private void getDataChatting() {
+        List<String> list = new ArrayList<>();
+        list.add(ID_LOGIN);
+        HandlerServer handlerServer = new HandlerServer(this, ServiceAddress.GETDATACHAT);
+        synchronized (this){
+            handlerServer.sendDataToServer(new ResponServer() {
+                @Override
+                public void gagal(String result) {
+                    Log.e(TAG, "gagal ambil data chatting: "+ result);
+                }
+
+                @Override
+                public void berhasil(JSONArray jsonArray) {
+                    jsonArrayChat = jsonArray;
                 }
             }, list);
         }

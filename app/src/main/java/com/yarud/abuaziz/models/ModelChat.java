@@ -3,16 +3,19 @@ package com.yarud.abuaziz.models;
 import com.yarud.abuaziz.utils.RecyclerViewItem;
 
 public class ModelChat extends RecyclerViewItem {
-    private String pesan, waktu, jam, id_login, photo, uniq_id;
+    private String id, pesan, waktu, jam, id_login, photo, pengirim;
 
-    public ModelChat(String pesan, String waktu, String jam, String id_login, String photo, String uniq_id) {
+    public ModelChat(String id, String pesan, String waktu, String jam, String id_login, String photo, String pengirim) {
+        this.id = id;
         this.pesan = pesan;
         this.waktu = waktu;
         this.jam = jam;
         this.id_login = id_login;
         this.photo = photo;
-        this.uniq_id = uniq_id;
+        this.pengirim = pengirim;
     }
+
+    public String getId() { return id; }
 
     public String getPesan() {
         return pesan;
@@ -34,7 +37,7 @@ public class ModelChat extends RecyclerViewItem {
         return photo;
     }
 
-    public String getUniq_id() {
-        return uniq_id;
+    public String getPengirim() {
+        return pengirim;
     }
 }
