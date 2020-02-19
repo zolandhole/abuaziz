@@ -17,6 +17,7 @@
         tools:ignore="UselessParent">
 
         <EditText
+            android:maxHeight="150dp"
             android:fontFamily="@font/robotolight"
             android:id="@+id/streaming_edittext"
             android:layout_weight="3"
@@ -44,5 +45,12 @@
             android:background="@drawable/send"
             android:layout_width="30dp"
             android:layout_height="30dp" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar_send"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_vertical"
+            android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

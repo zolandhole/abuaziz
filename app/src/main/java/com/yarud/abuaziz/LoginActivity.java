@@ -140,10 +140,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             @Override
                             public void onCompleted(JSONObject object, GraphResponse response) {
                                 if (response != null){
+                                    Log.e(TAG, "onCompleted: " + response);
                                     try {
                                         ID_LOGIN = object.getString("id");
                                         NAMA = object.getString("name");
-                                        EMAIL = object.getString("email");
+                                        EMAIL = "Facebook Akun";
                                         SUMBER_LOGIN = "FACEBOOK";
                                         Log.e(TAG, "onCompleted: " + ID_LOGIN + " " + NAMA + " " + EMAIL + " " + SUMBER_LOGIN);
                                         dbHandler.addUser(new ModelUser(1, SUMBER_LOGIN, ID_LOGIN, NAMA, EMAIL));

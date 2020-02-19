@@ -45,6 +45,15 @@ public class MessagingService extends FirebaseMessagingService {
             String topic = jsonObject.getString("topic");
             if (topic.equals("JUDULKAJIAN")){
                 pengecekanNotifikasi(jsonObject);
+            } else if (topic.equals("PESANUSER")) {
+                Log.e(TAG, "olahDataPushNotification: "+ jsonObject);
+                Intent intent = new Intent("PESANUSER");
+                intent.putExtra("id", jsonObject.getString("id"));
+                intent.putExtra("jam", jsonObject.getString("jam"));
+                intent.putExtra("pesan", jsonObject.getString("pesan"));
+                intent.putExtra("photo", jsonObject.getString("photo"));
+                intent.putExtra("pengirim", jsonObject.getString("pengirim"));
+                sendBroadcast(intent);
             }
         } catch (JSONException e) {
             Log.e(TAG, "showNotification: CATCH " + e);

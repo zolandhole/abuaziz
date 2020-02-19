@@ -2,7 +2,6 @@ package com.yarud.abuaziz.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,15 +33,12 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class AdapterChat extends RecyclerView.Adapter {
-    private static final String TAG = "AdapterChat";
     private List<RecyclerViewItem> recyclerViewItems;
     private static final int HEADER_ITEM = 0;
     private static final int CHAT_ITEM = 1;
     private Context context;
     private DBHandler dbHandler;
     private String ID_LOGIN;
-    private FirebaseAuth firebaseAuth;
-    private GoogleSignInClient googleSignInClient;
 
     public AdapterChat(List<RecyclerViewItem> recyclerViewItems, Context context, DBHandler dbHandler){
         this.recyclerViewItems = recyclerViewItems;
@@ -165,10 +161,10 @@ public class AdapterChat extends RecyclerView.Adapter {
     private void keLoginActivity(){
         dbHandler.deleteDB();
         LoginManager.getInstance().logOut();
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseAuth.signOut();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build();
-        googleSignInClient = GoogleSignIn.getClient(context, gso);
+        GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(context, gso);
         googleSignInClient.signOut();
         Intent intent = new Intent(context, LoginActivity.class);
         context.startActivity(intent);

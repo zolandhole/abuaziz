@@ -17,9 +17,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -57,6 +61,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements InternetConnectivityListener {
     private static final String TAG = "MainActivity";
@@ -78,8 +83,11 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private String ID_LOGIN, JUDUL_KAJIAN, PEMATERI;
     private LinearLayout kirim_pesan;
     private ModelHeader modelHeader;
-    private ModelChat modelChat;
     private JSONArray jsonArrayChat;
+    private Button btn_send;
+    private RecyclerView recyclerView;
+    private AdapterChat adapterChat;
+    private List<RecyclerViewItem> recyclerViewItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,17 +109,17 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         titlekajian = findViewById(R.id.titlekajian);
         kirim_pesan = findViewById(R.id.kirim_pesan);
         dbHandler = new DBHandler(this);
+        btn_send = findViewById(R.id.streaming_sendpesan);
 
         InternetAvailabilityChecker.init(this);
         InternetAvailabilityChecker mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();
         mInternetAvailabilityChecker.addInternetConnectivityListener(this);
 
+        getDataChatting();
         daftarkanBroadcast();
         playStreaming();
-
         modelHeader = new ModelHeader("", "", null);
-        modelChat = new ModelChat("","","",null,"");
-        initRecyclerView();
+//        initRecyclerView();
 
         btn_player.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,21 +133,84 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                 stopStreaming();
             }
         });
+        btn_send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                kirimPesan();
+            }
+        });
 
         generateTokenFCM();
     }
 
+    private void kirimPesan() {
+        final EditText editTextPesan = findViewById(R.id.streaming_edittext);
+        String pesan = editTextPesan.getText().toString().trim();
+        final ProgressBar progressBar_send = findViewById(R.id.progress_bar_send);
+        if (!pesan.equals("")){
+            btn_send.setVisibility(View.GONE);
+            progressBar_send.setVisibility(View.VISIBLE);
+            editTextPesan.setEnabled(false);
+            List<String> list = new ArrayList<>();
+            list.add(ID_LOGIN);
+            list.add(pesan);
+            HandlerServer handlerServer = new HandlerServer(MainActivity.this, ServiceAddress.TAMBAHCHAT);
+            synchronized (this){
+                handlerServer.sendDataToServer(new ResponServer() {
+                    @Override
+                    public void gagal(String result) {
+                        Log.e(TAG, "gagal: " + result);
+                        Toast.makeText(MainActivity.this, "Gagal Mengirim pesan, silahkan coba lagi", Toast.LENGTH_SHORT).show();
+                        btn_send.setVisibility(View.VISIBLE);
+                        progressBar_send.setVisibility(View.GONE);
+                        editTextPesan.setEnabled(true);
+                    }
+
+                    @Override
+                    public void berhasil(JSONArray jsonArray) {
+                        Log.e(TAG, "berhasil: " + jsonArray);
+                        editTextPesan.setText("");
+                        btn_send.setVisibility(View.VISIBLE);
+                        progressBar_send.setVisibility(View.GONE);
+                        editTextPesan.setEnabled(true);
+                        recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
+                    }
+                }, list);
+
+//                recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
+
+            }
+        } else {
+            Toast.makeText(this, "Isi pesan di kolom", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     private void initRecyclerView() {
-        RecyclerView recyclerView = findViewById(R.id.recycler_chat);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new AdapterChat(crateListData(), this, dbHandler));
+        recyclerView = findViewById(R.id.recycler_chat);
+        final LinearLayoutManager linearLayoutManager= new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        adapterChat = new AdapterChat(crateListData(), this, dbHandler);
+        recyclerView.setAdapter(adapterChat);
+        recyclerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (inputMethodManager != null){
+                    inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+                return false;
+            }
+        });
+        recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
     }
 
     private List<RecyclerViewItem> crateListData() {
-        List<RecyclerViewItem> recyclerViewItems = new ArrayList<>();
+        recyclerViewItems = new ArrayList<>();
         ModelHeader header = modelHeader;
         recyclerViewItems.add(header);
 
+        ModelChat modelChat;
         if (jsonArrayChat != null){
             for (int i = 0; i < jsonArrayChat.length(); i++) {
                 try {
@@ -175,6 +246,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
             }
         });
         FirebaseMessaging.getInstance().subscribeToTopic("JUDULKAJIAN");
+        FirebaseMessaging.getInstance().subscribeToTopic("PESANUSER");
     }
 
     @Override
@@ -204,7 +276,6 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                 @Override
                 public void gagal(String result) {
                     dbHandler.deleteDB();
-                    initRecyclerView();
                 }
 
                 @Override
@@ -217,11 +288,12 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                                     jsonObject.getString("email"),
                                     jsonObject.getString("photo")
                             );
+                            getDataChatting();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
-                    initRecyclerView();
+
                 }
             }, list);
         }
@@ -241,6 +313,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                 @Override
                 public void berhasil(JSONArray jsonArray) {
                     jsonArrayChat = jsonArray;
+                    initRecyclerView();
                 }
             }, list);
         }
@@ -331,6 +404,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                     try {
                         String activestreams = jsonObject.getString("activestreams");
                         Log.e(TAG, "result activestreams: "+ activestreams);
+                        String test;
                         if (!activestreams.equals("1")){
                             Toast.makeText(MainActivity.this, "Saat ini tidak ada Kajian Online Streaming", Toast.LENGTH_SHORT).show();
                             view_sukses.setVisibility(View.GONE);
@@ -391,6 +465,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+//                        recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
 
                     }
                 }, list);
@@ -491,6 +566,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         filter.addAction("pausePlayer");
         filter.addAction("errorsenddata");
         filter.addAction("JUDULKAJIAN");
+        filter.addAction("PESANUSER");
         registerReceiver(broadcastReceiver, filter);
     }
 
@@ -552,6 +628,20 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                 case "JUDULKAJIAN":
                     tv_titlekajian.setText(intent.getStringExtra("judulKajian"));
                     tv_pemateri.setText(intent.getStringExtra("pemateri"));
+                    recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
+                    break;
+                case "PESANUSER":
+                    Log.e(TAG, "onReceive: " + intent.getStringExtra("pesan"));
+                    ModelChat item = new ModelChat(
+                            intent.getStringExtra("id"),
+                            intent.getStringExtra("pesan"),
+                            intent.getStringExtra("jam"),
+                            intent.getStringExtra("photo"),
+                            intent.getStringExtra("pengirim")
+                    );
+                    recyclerViewItems.add(item);
+                    adapterChat.notifyDataSetChanged();
+                    recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
                     break;
             }
         }
