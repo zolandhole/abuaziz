@@ -154,6 +154,18 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                 rl_newmessage.setVisibility(View.GONE);
             }
         });
+
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                int scrollposition = linearLayoutManager.findLastVisibleItemPosition();
+                if (scrollposition == Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() - 2){
+                    rl_newmessage.setVisibility(View.GONE);
+                }
+            }
+        });
         generateTokenFCM();
     }
 
@@ -187,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                         btn_send.setVisibility(View.VISIBLE);
                         progressBar_send.setVisibility(View.GONE);
                         editTextPesan.setEnabled(true);
-                        recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
+                        recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() - 1);
                     }
                 }, list);
             }
@@ -446,7 +458,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                         String activestreams = jsonObject.getString("activestreams");
                         Log.e(TAG, "result activestreams: "+ activestreams);
                         String test;
-                        if (activestreams.equals("1")){
+                        if (!activestreams.equals("1")){
                             Toast.makeText(MainActivity.this, "Saat ini tidak ada Kajian Online Streaming", Toast.LENGTH_SHORT).show();
                             view_sukses.setVisibility(View.GONE);
                             view_offline.setVisibility(View.VISIBLE);
