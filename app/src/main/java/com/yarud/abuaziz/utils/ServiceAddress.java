@@ -8,4 +8,5 @@ public class ServiceAddress {
     public static final String GETPROFILE = base_url+"/pengguna/get_data_id_login";
     public static final String GETDATACHAT = base_url+"/chatting/get_data_chat";
     public static final String TAMBAHCHAT = base_url+"/chatting/create_data";
+    public static final String GETDATAIKLAN = base_url+"/iklan/get_data_iklan";
 }

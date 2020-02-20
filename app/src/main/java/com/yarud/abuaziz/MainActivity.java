@@ -45,6 +45,7 @@ import com.treebo.internetavailabilitychecker.InternetConnectivityListener;
 import com.yarud.abuaziz.adapters.AdapterChat;
 import com.yarud.abuaziz.models.ModelChat;
 import com.yarud.abuaziz.models.ModelHeader;
+import com.yarud.abuaziz.models.ModelIklan;
 import com.yarud.abuaziz.services.StreamingService;
 import com.yarud.abuaziz.utils.DBHandler;
 import com.yarud.abuaziz.utils.HandlerServer;
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private Boolean internetConnection = true;
     private CardView cv_nointernet;
     private Animation animFadeIn, animFadeOut;
-    private RelativeLayout view_sukses;
+    private RelativeLayout view_sukses, rl_newmessage;
     private ConstraintLayout view_offline;
     private RelativeLayout titlekajian;
     private boolean doubleBackToExitPressedOnce = false;
@@ -83,11 +84,13 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private String ID_LOGIN, JUDUL_KAJIAN, PEMATERI;
     private LinearLayout kirim_pesan;
     private ModelHeader modelHeader;
+    private ModelIklan modelIklan;
     private JSONArray jsonArrayChat;
     private Button btn_send;
     private RecyclerView recyclerView;
     private AdapterChat adapterChat;
     private List<RecyclerViewItem> recyclerViewItems;
+    private LinearLayoutManager linearLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,16 +113,21 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         kirim_pesan = findViewById(R.id.kirim_pesan);
         dbHandler = new DBHandler(this);
         btn_send = findViewById(R.id.streaming_sendpesan);
-
+        rl_newmessage = findViewById(R.id.rl_newmessage);
+        recyclerView = findViewById(R.id.recycler_chat);
+        recyclerView.setVisibility(View.GONE);
         InternetAvailabilityChecker.init(this);
         InternetAvailabilityChecker mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();
         mInternetAvailabilityChecker.addInternetConnectivityListener(this);
 
-        getDataChatting();
+
         daftarkanBroadcast();
         playStreaming();
+        getDataChatting();
+
         modelHeader = new ModelHeader("", "", null);
-//        initRecyclerView();
+        modelIklan = new ModelIklan(null, "", "");
+        getDataIklan();
 
         btn_player.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,7 +147,13 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                 kirimPesan();
             }
         });
-
+        rl_newmessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() - 1);
+                rl_newmessage.setVisibility(View.GONE);
+            }
+        });
         generateTokenFCM();
     }
 
@@ -173,12 +187,9 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                         btn_send.setVisibility(View.VISIBLE);
                         progressBar_send.setVisibility(View.GONE);
                         editTextPesan.setEnabled(true);
-                        recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
+                        recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
                     }
                 }, list);
-
-//                recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
-
             }
         } else {
             Toast.makeText(this, "Isi pesan di kolom", Toast.LENGTH_SHORT).show();
@@ -187,8 +198,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
 
     @SuppressLint("ClickableViewAccessibility")
     private void initRecyclerView() {
-        recyclerView = findViewById(R.id.recycler_chat);
-        final LinearLayoutManager linearLayoutManager= new LinearLayoutManager(this);
+        linearLayoutManager= new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
         adapterChat = new AdapterChat(crateListData(), this, dbHandler);
         recyclerView.setAdapter(adapterChat);
@@ -202,13 +212,17 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                 return false;
             }
         });
-        recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
+//        recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
+        recyclerView.setVisibility(View.VISIBLE);
     }
 
     private List<RecyclerViewItem> crateListData() {
         recyclerViewItems = new ArrayList<>();
         ModelHeader header = modelHeader;
         recyclerViewItems.add(header);
+
+        ModelIklan iklan = modelIklan;
+        recyclerViewItems.add(iklan);
 
         ModelChat modelChat;
         if (jsonArrayChat != null){
@@ -224,16 +238,10 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                     );
                     recyclerViewItems.add(modelChat);
                 } catch (JSONException e) {
-                    modelChat = new ModelChat("","","",null,"");
-                    recyclerViewItems.add(modelChat);
                     e.printStackTrace();
                 }
             }
-        } else {
-            modelChat = new ModelChat("","","",null,"");
-            recyclerViewItems.add(modelChat);
         }
-
         return recyclerViewItems;
     }
 
@@ -247,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         });
         FirebaseMessaging.getInstance().subscribeToTopic("JUDULKAJIAN");
         FirebaseMessaging.getInstance().subscribeToTopic("PESANUSER");
+        FirebaseMessaging.getInstance().subscribeToTopic("UPDATEIKLAN");
     }
 
     @Override
@@ -288,12 +297,44 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                                     jsonObject.getString("email"),
                                     jsonObject.getString("photo")
                             );
-                            getDataChatting();
+                            getDataIklan();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
 
+                }
+            }, list);
+        }
+    }
+
+    private void getDataIklan() {
+        List<String> list = new ArrayList<>();
+        list.add(ID_LOGIN);
+        HandlerServer handlerServer = new HandlerServer(this, ServiceAddress.GETDATAIKLAN);
+        synchronized (this){
+            handlerServer.sendDataToServer(new ResponServer() {
+                @Override
+                public void gagal(String result) {
+                    Log.e(TAG, "gagal ambil data Iklan: "+ result);
+                }
+
+                @Override
+                public void berhasil(JSONArray jsonArray) {
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        try {
+                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                            modelIklan = new ModelIklan(
+                                    jsonObject.getString("photoiklan"),
+                                    jsonObject.getString("juduliklan"),
+                                    jsonObject.getString("deskripsiiklan")
+                            );
+                            Log.e(TAG, "berhasil: " + jsonArray);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    getDataChatting();
                 }
             }, list);
         }
@@ -405,7 +446,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                         String activestreams = jsonObject.getString("activestreams");
                         Log.e(TAG, "result activestreams: "+ activestreams);
                         String test;
-                        if (!activestreams.equals("1")){
+                        if (activestreams.equals("1")){
                             Toast.makeText(MainActivity.this, "Saat ini tidak ada Kajian Online Streaming", Toast.LENGTH_SHORT).show();
                             view_sukses.setVisibility(View.GONE);
                             view_offline.setVisibility(View.VISIBLE);
@@ -465,8 +506,6 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-//                        recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
-
                     }
                 }, list);
             }
@@ -567,6 +606,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         filter.addAction("errorsenddata");
         filter.addAction("JUDULKAJIAN");
         filter.addAction("PESANUSER");
+        filter.addAction("UPDATEIKLAN");
         registerReceiver(broadcastReceiver, filter);
     }
 
@@ -628,7 +668,6 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                 case "JUDULKAJIAN":
                     tv_titlekajian.setText(intent.getStringExtra("judulKajian"));
                     tv_pemateri.setText(intent.getStringExtra("pemateri"));
-                    recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
                     break;
                 case "PESANUSER":
                     Log.e(TAG, "onReceive: " + intent.getStringExtra("pesan"));
@@ -641,7 +680,24 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                     );
                     recyclerViewItems.add(item);
                     adapterChat.notifyDataSetChanged();
-                    recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() -1);
+
+                    int scrollposition = linearLayoutManager.findLastVisibleItemPosition();
+                    if (scrollposition != Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() - 2){
+                        rl_newmessage.setVisibility(View.VISIBLE);
+                    } else {
+                        rl_newmessage.setVisibility(View.GONE);
+                        recyclerView.smoothScrollToPosition(Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() - 1);
+                    }
+                    break;
+                case "UPDATEIKLAN":
+                    Log.e(TAG, "onReceive: " + intent.getStringExtra("photoiklan"));
+                    modelIklan = new ModelIklan(
+                            intent.getStringExtra("photoiklan"),
+                            intent.getStringExtra("juduliklan"),
+                            intent.getStringExtra("deskripsiiklan")
+                    );
+                    recyclerViewItems.set(1,modelIklan);
+                    adapterChat.notifyItemChanged(1);
                     break;
             }
         }
@@ -664,7 +720,5 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         btn_stop.setVisibility(View.INVISIBLE);
         btn_player.setVisibility(View.INVISIBLE);
     }
-
-
 
 }

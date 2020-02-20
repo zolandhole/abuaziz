@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -20,6 +21,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.yarud.abuaziz.LoginActivity;
 import com.yarud.abuaziz.R;
+import com.yarud.abuaziz.models.ModelIklan;
 import com.yarud.abuaziz.utils.DBHandler;
 import com.yarud.abuaziz.utils.RecyclerViewItem;
 import com.yarud.abuaziz.models.ModelChat;
@@ -36,6 +38,7 @@ public class AdapterChat extends RecyclerView.Adapter {
     private List<RecyclerViewItem> recyclerViewItems;
     private static final int HEADER_ITEM = 0;
     private static final int CHAT_ITEM = 1;
+    private static final int IKLAN_ITEM = 2;
     private Context context;
     private DBHandler dbHandler;
     private String ID_LOGIN;
@@ -55,6 +58,9 @@ public class AdapterChat extends RecyclerView.Adapter {
         if (viewType == HEADER_ITEM){
             row = inflater.inflate(R.layout.layout_header, parent, false);
             return new HeaderHolder(row);
+        } else if (viewType == IKLAN_ITEM) {
+            row = inflater.inflate(R.layout.layout_iklan, parent, false);
+            return new IklanHolder(row);
         } else {
             row = inflater.inflate(R.layout.layout_chat, parent, false);
             return new ChatHolder(row);
@@ -80,7 +86,16 @@ public class AdapterChat extends RecyclerView.Adapter {
                 headerHolder.namaProfile.setText(modelHeader.getNAMAPROFILE());
                 headerHolder.emailProfile.setText(modelHeader.getEMAILPROFILE());
             }
-        } else {
+        } else if (holder instanceof IklanHolder){
+            IklanHolder iklanHolder = (IklanHolder) holder;
+            ModelIklan modelIklan = (ModelIklan) recyclerViewItem;
+            if (modelIklan.getPHOTOIKLAN() != null){
+                Glide.with(context).load(modelIklan.getPHOTOIKLAN()).placeholder(R.drawable.back_putih).into(iklanHolder.photoIklan);
+            }
+            iklanHolder.textViewjuduliklan.setText(modelIklan.getJUDULIKLAN());
+            iklanHolder.textViewdescriptioniklan.setText(modelIklan.getDESKRIPSIIKLAN());
+        }
+        else {
             ChatHolder chatHolder = (ChatHolder) holder;
             ModelChat modelChat = (ModelChat) recyclerViewItem;
             if (modelChat.getPhoto() != null){
@@ -97,6 +112,8 @@ public class AdapterChat extends RecyclerView.Adapter {
         RecyclerViewItem recyclerViewItem = recyclerViewItems.get(position);
         if (recyclerViewItem instanceof ModelHeader)
             return HEADER_ITEM;
+        else if (recyclerViewItem instanceof ModelIklan)
+            return IKLAN_ITEM;
         else if (recyclerViewItem instanceof ModelChat)
             return CHAT_ITEM;
         else
@@ -134,6 +151,17 @@ public class AdapterChat extends RecyclerView.Adapter {
                     keLoginActivity();
                 }
             });
+        }
+    }
+
+    private class IklanHolder extends RecyclerView.ViewHolder {
+        ImageView photoIklan;
+        TextView textViewjuduliklan, textViewdescriptioniklan;
+        IklanHolder(@NonNull View itemView) {
+            super(itemView);
+            photoIklan = itemView.findViewById(R.id.photoiklan);
+            textViewjuduliklan = itemView.findViewById(R.id.juduliklan);
+            textViewdescriptioniklan = itemView.findViewById(R.id.descriptioniklan);
         }
     }
 
