@@ -25,12 +25,14 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -71,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private DatabaseReference mServerStreaming = mRootRef.child("streamingaddress");
     private DatabaseReference mAlamat = mRootRef.child("alamat");
     public String streamingURL, base_url, token_fcm;
-    private TextView tv_messageError, tv_titlekajian, tv_pemateri;
+    private TextView tv_messageError, tv_titlekajian, tv_pemateri, juduliklan, descriptioniklan;
     private ProgressBar progressBarPlayer;
     private Boolean internetConnection = true;
     private CardView cv_nointernet;
@@ -91,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private AdapterChat adapterChat;
     private List<RecyclerViewItem> recyclerViewItems;
     private LinearLayoutManager linearLayoutManager;
+    private ImageView photoIklan;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +120,10 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         rl_newmessage = findViewById(R.id.rl_newmessage);
         recyclerView = findViewById(R.id.recycler_chat);
         recyclerView.setVisibility(View.GONE);
+        photoIklan = findViewById(R.id.photoiklan);
+        juduliklan = findViewById(R.id.juduliklan);
+        descriptioniklan = findViewById(R.id.descriptioniklan);
+
         InternetAvailabilityChecker.init(this);
         InternetAvailabilityChecker mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();
         mInternetAvailabilityChecker.addInternetConnectivityListener(this);
@@ -236,12 +244,11 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         ModelIklan iklan = modelIklan;
         recyclerViewItems.add(iklan);
 
-        ModelChat modelChat;
         if (jsonArrayChat != null){
             for (int i = 0; i < jsonArrayChat.length(); i++) {
                 try {
                     JSONObject jsonObject = jsonArrayChat.getJSONObject(i);
-                    modelChat = new ModelChat(
+                    ModelChat modelChat = new ModelChat(
                             jsonObject.getString("id"),
                             jsonObject.getString("pesan"),
                             jsonObject.getString("jam"),
@@ -342,6 +349,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                                     jsonObject.getString("deskripsiiklan")
                             );
                             Log.e(TAG, "berhasil: " + jsonArray);
+                            updateIklan(jsonObject.getString("photoiklan"), jsonObject.getString("juduliklan"), jsonObject.getString("deskripsiiklan"));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -350,6 +358,12 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                 }
             }, list);
         }
+    }
+
+    private void updateIklan(String photoiklan, String juduliklans, String deskripsiiklan) {
+        Glide.with(MainActivity.this).load(photoiklan).placeholder(R.drawable.button_abu).into(photoIklan);
+        juduliklan.setText(juduliklans);
+        descriptioniklan.setText(deskripsiiklan);
     }
 
     private void getDataChatting() {
@@ -622,7 +636,6 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         registerReceiver(broadcastReceiver, filter);
     }
 
-    private int countError = 1;
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -650,6 +663,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                     if (bufferCode.equals("701")){
                         Log.e(TAG, "onReceive: Buffer Completed 701");
                     }
+                    checkStatusServer();
                     tv_messageError.setText(R.string.koneksi_lambat);
                     cv_nointernet.setAnimation(animFadeIn);
                     break;
@@ -657,18 +671,18 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                     cv_nointernet.setAnimation(animFadeOut);
                 case "streamingError":
                     Log.e(TAG, "onReceive: ERROR");
-                    countError = countError+1;
-                    if (countError <= 2){
-                        if (isMyServiceRunning()){
-                            suksesLoading();
-                            new ServiceStreaming().execute();
-                        }
-                    } else {
-                        suksesStop();
-                        Log.e(TAG, "onReceive: ERROR");
-                        Toast.makeText(context, "Ada kesalahan, tidak dapat memutar Streaming, hubungi Developer", Toast.LENGTH_SHORT).show();
-                    }
-                    Log.e(TAG, "onReceive: " + countError);
+//                    countError = countError+1;
+//                    if (countError <= 2){
+//                        if (isMyServiceRunning()){
+//                            suksesLoading();
+//                            new ServiceStreaming().execute();
+//                        }
+//                    } else {
+//                        suksesStop();
+//                        Log.e(TAG, "onReceive: ERROR");
+//                        Toast.makeText(context, "Ada kesalahan, tidak dapat memutar Streaming, hubungi Developer", Toast.LENGTH_SHORT).show();
+//                    }
+//                    Log.e(TAG, "onReceive: " + countError);
                     break;
                 case "pausePlayer":
                     suksesStop();
@@ -710,10 +724,32 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                     );
                     recyclerViewItems.set(1,modelIklan);
                     adapterChat.notifyItemChanged(1);
+                    updateIklan(intent.getStringExtra("photoiklan"), intent.getStringExtra("juduliklan"), intent.getStringExtra("deskripsiiklan"));
                     break;
             }
         }
     };
+
+    private void checkStatusServer() {
+        HandlerServer handlerServer = new HandlerServer(MainActivity.this, streamingURL+"/statistics?json=1");
+        handlerServer.getStatusServerShoutcast(new ResponShoutcast() {
+            @Override
+            public void result(JSONObject jsonObject) {
+                try {
+                    String activestreams = jsonObject.getString("activestreams");
+                    if (!activestreams.equals("1")){
+                        Toast.makeText(MainActivity.this, "Kajian telah berakhir", Toast.LENGTH_LONG).show();
+                        view_sukses.setVisibility(View.GONE);
+                        view_offline.setVisibility(View.VISIBLE);
+                        suksesStop();
+                        clear();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
     private void suksesPlay(){
         progressBarPlayer.setVisibility(View.INVISIBLE);
@@ -731,6 +767,12 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         progressBarPlayer.setVisibility(View.VISIBLE);
         btn_stop.setVisibility(View.INVISIBLE);
         btn_player.setVisibility(View.INVISIBLE);
+    }
+
+    public void clear() {
+        int size = recyclerViewItems.size();
+        recyclerViewItems.clear();
+        adapterChat.notifyItemRangeRemoved(0, size);
     }
 
 }
