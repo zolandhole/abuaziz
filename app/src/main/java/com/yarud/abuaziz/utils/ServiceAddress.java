@@ -9,4 +9,5 @@ public class ServiceAddress {
     public static final String GETDATACHAT = base_url+"/chatting/get_data_chat";
     public static final String TAMBAHCHAT = base_url+"/chatting/create_data";
     public static final String GETDATAIKLAN = base_url+"/iklan/get_data_iklan";
+    public static final String GETDATAREKAMAN = base_url+"/rekaman/api_data_rekaman";
 }
