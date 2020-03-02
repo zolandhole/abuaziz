@@ -24,6 +24,8 @@
     <string name="masuk_dengan_akun_facebook">Masuk dengan Akun Facebook</string>
     <string name="atau">atau</string>
     <string name="masuk_dengan_akun_google">Masuk dengan Akun Google</string>
-    <string name="facebook_app_id">487230878888052</string> <string name="fb_login_protocol_scheme">fb487230878888052</string>
+    <string name="facebook_app_id">487230878888052</string>
+    <string name="fb_login_protocol_scheme">fb487230878888052</string>
+    <string name="list_rekaman_kajian">List Rekaman Kajian</string>
 
 </resources>

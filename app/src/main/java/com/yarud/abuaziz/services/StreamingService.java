@@ -85,10 +85,14 @@ public class StreamingService extends Service implements
                     case (AudioManager.AUDIOFOCUS_LOSS):
                         break;
                     case (AudioManager.AUDIOFOCUS_LOSS_TRANSIENT):
-                        pauseMedia();
+                        try {
+                            pauseMedia();
+                        } catch (IllegalStateException e){
+                            e.printStackTrace();
+                            Log.e(TAG, "onAudioFocusChange: Catch AUDIOFOCUS_LOSS_TRANSIENT: ", e);
+                        }
                         break;
                     case (AudioManager.AUDIOFOCUS_GAIN):
-//                        playMedia();
                         onPrepared(mediaPlayer);
                         break;
                     case (AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK):
@@ -198,6 +202,7 @@ public class StreamingService extends Service implements
     private void playMedia(){
         Log.e(TAG, "playMedia: ");
         if (!mediaPlayer.isPlaying()){
+            mediaPlayer.setVolume(1.0f,1.0f);
             mediaPlayer.start();
             Intent intent = new Intent("mediaplayed");
             sendBroadcast(intent);

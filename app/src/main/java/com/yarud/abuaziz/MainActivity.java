@@ -60,6 +60,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -88,13 +89,12 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private ModelHeader modelHeader;
     private ModelIklan modelIklan;
     private JSONArray jsonArrayChat;
-    private Button btn_send;
+    private Button btn_send, btn_listkajian;
     private RecyclerView recyclerView;
     private AdapterChat adapterChat;
     private List<RecyclerViewItem> recyclerViewItems;
     private LinearLayoutManager linearLayoutManager;
     private ImageView photoIklan;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         photoIklan = findViewById(R.id.photoiklan);
         juduliklan = findViewById(R.id.juduliklan);
         descriptioniklan = findViewById(R.id.descriptioniklan);
+        btn_listkajian = findViewById(R.id.btn_listkajian);
 
         InternetAvailabilityChecker.init(this);
         InternetAvailabilityChecker mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();
@@ -153,6 +154,13 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
             @Override
             public void onClick(View v) {
                 kirimPesan();
+            }
+        });
+
+        btn_listkajian.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, RekamanKajianActivity.class));
             }
         });
         rl_newmessage.setOnClickListener(new View.OnClickListener() {
@@ -567,6 +575,11 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     @Override
     public void onInternetConnectivityChanged(boolean isConnected) {
         Log.e(TAG, "onInternetConnectivityChanged: " + isConnected);
+        if (isMyServiceRunning()){
+            suksesStop();
+        } else {
+            suksesPlay();
+        }
         if (isConnected){
             internetConnection = true;
             yesInternetConection();
@@ -742,6 +755,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                         view_sukses.setVisibility(View.GONE);
                         view_offline.setVisibility(View.VISIBLE);
                         suksesStop();
+                        stopStreaming();
                         clear();
                     }
                 } catch (JSONException e) {
