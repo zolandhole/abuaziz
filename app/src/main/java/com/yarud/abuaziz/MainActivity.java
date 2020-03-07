@@ -60,7 +60,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private ModelHeader modelHeader;
     private ModelIklan modelIklan;
     private JSONArray jsonArrayChat;
-    private Button btn_send, btn_listkajian;
+    private Button btn_send;
     private RecyclerView recyclerView;
     private AdapterChat adapterChat;
     private List<RecyclerViewItem> recyclerViewItems;
@@ -123,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         photoIklan = findViewById(R.id.photoiklan);
         juduliklan = findViewById(R.id.juduliklan);
         descriptioniklan = findViewById(R.id.descriptioniklan);
-        btn_listkajian = findViewById(R.id.btn_listkajian);
+        Button btn_listkajian = findViewById(R.id.btn_listkajian);
 
         InternetAvailabilityChecker.init(this);
         InternetAvailabilityChecker mInternetAvailabilityChecker = InternetAvailabilityChecker.getInstance();

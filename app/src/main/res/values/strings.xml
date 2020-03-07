@@ -27,5 +27,8 @@
     <string name="facebook_app_id">487230878888052</string>
     <string name="fb_login_protocol_scheme">fb487230878888052</string>
     <string name="list_rekaman_kajian">List Rekaman Kajian</string>
+    <string name="_20_jan_2012_12_00">20 Jan 2012 12:00</string>
+    <string name="tidak_ada_rekaman">tidak ada rekaman kajian</string>
+    <string name="kembali">kembali</string>
 
 </resources>
