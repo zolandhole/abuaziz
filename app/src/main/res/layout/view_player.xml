@@ -64,19 +64,19 @@
         android:weightSum="1"
         tools:ignore="UseCompoundDrawables">
 
-            <ImageButton
-                android:visibility="gone"
-                android:layout_centerInParent="true"
-                android:id="@+id/btn_player"
-                android:background="@drawable/button_abuabu"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:src="@drawable/play"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:maxHeight="55dp"
-                android:maxWidth="55dp"
-                android:contentDescription="@null" />
+        <ImageButton
+            android:visibility="gone"
+            android:layout_centerInParent="true"
+            android:id="@+id/btn_player"
+            android:background="@drawable/button_abuabu"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/play"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:maxHeight="55dp"
+            android:maxWidth="55dp"
+            android:contentDescription="@null" />
 
         <ImageButton
             android:visibility="gone"

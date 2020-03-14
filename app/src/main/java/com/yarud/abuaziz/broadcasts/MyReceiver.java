@@ -22,6 +22,16 @@ public class MyReceiver extends BroadcastReceiver {
                 case "exit":
                     context.sendBroadcast(new Intent("exit"));
                     break;
+                case "stoprekaman":
+                    context.sendBroadcast(new Intent("stoprekaman"));
+                    break;
+                case "startrekaman":
+                    context.sendBroadcast(new Intent("startrekaman"));
+                    break;
+                case "exitrekaman":
+                    context.sendBroadcast(new Intent("exitrekaman"));
+                    break;
+
             }
         }
     }

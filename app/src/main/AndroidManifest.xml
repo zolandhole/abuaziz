@@ -19,6 +19,9 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning"
         tools:targetApi="n">
         <activity
+            android:configChanges="orientation|screenSize"
+            android:name=".PlayerActivity" />
+        <activity
             android:name=".RekamanKajianActivity"
             android:screenOrientation="portrait" />
 
@@ -57,6 +60,9 @@
 
         <service
             android:name=".services.StreamingService"
+            tools:Ignore="InnerclassSeparator" />
+        <service
+            android:name=".services.RekamanService"
             tools:Ignore="InnerclassSeparator" />
 
         <receiver

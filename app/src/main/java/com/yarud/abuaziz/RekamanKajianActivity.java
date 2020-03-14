@@ -3,7 +3,6 @@ package com.yarud.abuaziz;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,11 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.yarud.abuaziz.adapters.AdapterRekaman;
-import com.yarud.abuaziz.models.ModelChat;
-import com.yarud.abuaziz.models.ModelHeader;
-import com.yarud.abuaziz.models.ModelIklan;
 import com.yarud.abuaziz.models.ModelRekaman;
-import com.yarud.abuaziz.utils.DBHandler;
 import com.yarud.abuaziz.utils.HandlerServer;
 import com.yarud.abuaziz.utils.RecyclerViewItem;
 import com.yarud.abuaziz.utils.ResponServer;
@@ -33,14 +28,12 @@ public class RekamanKajianActivity extends AppCompatActivity {
 
     private static final String TAG = "RekamanKajianActivity";
     private RecyclerView recycler_rekaman;
-    private AdapterRekaman adapterRekaman;
     private List<RecyclerViewItem> recyclerViewItems;
-    private LinearLayoutManager linearLayoutManager;
-    private DBHandler dbHandler;
     private LinearLayout linear_list_rekaman;
     private RelativeLayout relative_no_rekaman;
     private Button btn_back;
     private ModelRekaman listRekaman;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +43,11 @@ public class RekamanKajianActivity extends AppCompatActivity {
         relative_no_rekaman = findViewById(R.id.relative_no_rekaman);
         recycler_rekaman = findViewById(R.id.recycler_rekaman);
         btn_back = findViewById(R.id.btn_back);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         getListRekaman();
     }
 
@@ -74,10 +72,10 @@ public class RekamanKajianActivity extends AppCompatActivity {
 
     private void setupListRekaman(JSONArray jsonArray) {
 
-        linearLayoutManager = new LinearLayoutManager(this);
-        dbHandler = new DBHandler(this);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+//        DBHandler dbHandler = new DBHandler(this);
         recyclerViewItems = new ArrayList<>();
-        adapterRekaman = new AdapterRekaman(crateListData(jsonArray), this, dbHandler);
+        AdapterRekaman adapterRekaman = new AdapterRekaman(crateListData(jsonArray), this);
         Log.e(TAG, "setupListRekaman: " + listRekaman.getNama());
         if (listRekaman != null){
             recycler_rekaman.setLayoutManager(linearLayoutManager);
@@ -122,5 +120,11 @@ public class RekamanKajianActivity extends AppCompatActivity {
             }
         }
         return recyclerViewItems;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
     }
 }
