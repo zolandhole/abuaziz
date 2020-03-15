@@ -3,6 +3,7 @@ package com.yarud.abuaziz;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatSeekBar;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,21 +13,21 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.yarud.abuaziz.services.RekamanService;
-
-import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class PlayerActivity extends AppCompatActivity {
 
     private static final String TAG = "PlayerActivity";
     private String judul, upload_date, link, idSong;
     private Button player_btn_play, player_btn_stop, player_btn_pause, player_btn_resume;
-    private TextView player_tanggal, player_judul_kajian, player_judul;
+    private TextView player_tanggal, player_judul_kajian, player_judul, tv_total_waktu, tv_current_waktu;
+    private ProgressBar progress_buffered;
     private AppCompatSeekBar player_seekbar;
-    private int maxSeek, progressSeek;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,16 +47,13 @@ public class PlayerActivity extends AppCompatActivity {
         player_judul_kajian = findViewById(R.id.player_judul_kajian);
         player_judul = findViewById(R.id.player_judul);
         player_seekbar = findViewById(R.id.player_seekbar);
+        tv_total_waktu = findViewById(R.id.tv_total_waktu);
+        tv_current_waktu = findViewById(R.id.current_waktu);
+        progress_buffered = findViewById(R.id.tv_buffered);
 
         Log.e(TAG, "onCreate: " + judul + upload_date + link);
         daftarkanBroadcast();
         playRekaman();
-//        if (!isMyServiceRunning()){
-//            playRekaman();
-//        } else {
-//            Log.e(TAG, "onCreate: HERE");
-//            sendBroadcast(new Intent("idsong"));
-//        }
 
         player_btn_play.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,18 +112,17 @@ public class PlayerActivity extends AppCompatActivity {
         IntentFilter filter = new IntentFilter();
         filter.addAction("mediaplayedrekaman");
         filter.addAction("pausePlayerrekaman");
-        filter.addAction("streamingErrorrekaman");
-        filter.addAction("lemotrekaman");
-        filter.addAction("lemotrekaman");
-        filter.addAction("tidaklemotrekaman");
         filter.addAction("mediastopedrekaman");
         filter.addAction("duration");
         filter.addAction("UPDATESEEK");
-        filter.addAction("resultidsong");
+        filter.addAction("buffering");
+        filter.addAction("update");
+        filter.addAction("JUDULKAJIAN");
         registerReceiver(broadcastReceiver, filter);
     }
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @SuppressLint("SetTextI18n")
         @Override
         public void onReceive(Context context, Intent intent) {
             String params = intent.getAction();
@@ -140,7 +137,7 @@ public class PlayerActivity extends AppCompatActivity {
                     player_btn_pause.setVisibility(View.GONE);
                     player_btn_resume.setVisibility(View.GONE);
                     player_judul.setText(R.string.dihentikan);
-                    player_seekbar.setProgress(0);
+//                    player_seekbar.setProgress(0);
                     break;
                 case "pausePlayerrekaman":
                     player_btn_play.setVisibility(View.GONE);
@@ -150,33 +147,44 @@ public class PlayerActivity extends AppCompatActivity {
                     player_judul.setText(R.string.dijeda);
                     break;
                 case "duration":
-                    maxSeek = intent.getIntExtra("duration", 0);
+                    int maxSeek = intent.getIntExtra("duration", 0);
                     player_seekbar.setMax(intent.getIntExtra("duration", 0) - 1000);
+                    @SuppressLint("DefaultLocale") String totalwaktu = String.format(
+                            "%d:%d",
+                            TimeUnit.MILLISECONDS.toMinutes(maxSeek),
+                            TimeUnit.MILLISECONDS.toSeconds(maxSeek) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(maxSeek)));
+                    tv_total_waktu.setText(totalwaktu);
                     break;
                 case "UPDATESEEK":
                     updateSeekBar(intent.getIntExtra("valueseekbar", 0));
                     break;
-                case "resultidsong":
-                    Log.e(TAG, "onReceive: IDSONG" + Objects.requireNonNull(intent.getExtras()).getString("songid"));
-                    if (idSong.equals(Objects.requireNonNull(intent.getExtras()).getString("songid"))){
-                        player_tanggal.setText(upload_date);
-                        player_judul_kajian.setText(judul);
-                        player_seekbar.setMax(maxSeek);
-                        player_seekbar.setProgress(progressSeek);
-                        played();
+                case "buffering":
+                    if (intent.getIntExtra("percent", 0) > 6){
+                        progress_buffered.setVisibility(View.GONE);
                     }
+                    break;
+                case "update":
+                    progress_buffered.setVisibility(View.VISIBLE);
+                    break;
+                case "JUDULKAJIAN":
+                    sendBroadcast(new Intent("exitrekaman"));
+                    finish();
                     break;
             }
         }
     };
 
     private void updateSeekBar(int valueseekbar) {
-        progressSeek = valueseekbar;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             player_seekbar.setProgress(valueseekbar, true);
         } else {
             player_seekbar.setProgress(valueseekbar);
         }
+        @SuppressLint("DefaultLocale") String currentwaktu = String.format(
+                "%d:%d",
+                TimeUnit.MILLISECONDS.toMinutes(valueseekbar),
+                TimeUnit.MILLISECONDS.toSeconds(valueseekbar) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(valueseekbar)));
+        tv_current_waktu.setText(currentwaktu);
         player_seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {

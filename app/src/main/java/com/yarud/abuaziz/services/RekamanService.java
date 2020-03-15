@@ -19,7 +19,6 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import com.yarud.abuaziz.PlayerActivity;
 import com.yarud.abuaziz.R;
 import com.yarud.abuaziz.broadcasts.MyReceiver;
 
@@ -41,7 +40,6 @@ public class RekamanService extends Service implements
     private NotificationManagerCompat notificationManagerCompat;
     private Handler handler;
     private Runnable runnable;
-    private int songId;
 
     @Override
     public void onCreate() {
@@ -134,7 +132,6 @@ public class RekamanService extends Service implements
         String nama, judul_kajian, pemateri;
         if (intent!=null){
             nama = Objects.requireNonNull(intent.getExtras()).getString("name");
-            songId = Integer.parseInt(Objects.requireNonNull(intent.getExtras().getString("idsong")));
             judul_kajian = intent.getExtras().getString("judul_kajian");
             pemateri = intent.getExtras().getString("pemateri");
             showNotification(nama, judul_kajian, pemateri);
@@ -153,10 +150,6 @@ public class RekamanService extends Service implements
     }
 
     private void showNotification(String nama, String judul_kajian, String pemateri){
-        Intent intentNotification = new Intent(this, PlayerActivity.class);
-        intentNotification.putExtra("streamingRadio", "streamingRadio");
-        intentNotification.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntentOpenApp = PendingIntent.getActivity(this, 0, intentNotification, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent intentExit = new Intent(this, MyReceiver.class);
         intentExit.setAction("exitrekaman");
@@ -177,7 +170,6 @@ public class RekamanService extends Service implements
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setContentTitle(judul_kajian)
                 .setContentText(pemateri)
-                .setContentIntent(pendingIntentOpenApp)
                 .addAction(android.R.drawable.ic_delete, "HENTIKAN", pendingIntentExit)
                 .addAction(android.R.drawable.ic_media_pause, "JEDA", pendingIntentPause)
                 .addAction(android.R.drawable.ic_media_play, "PUTAR", pendingIntentPlay);
@@ -231,7 +223,6 @@ public class RekamanService extends Service implements
             Log.e(TAG, "playMedia: CURRENT POSITION" + mediaPlayer.getCurrentPosition());
             updateSeekBar();
             Intent intent = new Intent("mediaplayedrekaman");
-            intent.putExtra("songid", songId);
             sendBroadcast(intent);
         }
     }
@@ -298,9 +289,9 @@ public class RekamanService extends Service implements
 
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
-//        Log.e(TAG, "onBufferingUpdate: StreamingService" + mp + " percent: " + percent);
-        Intent intent = new Intent("lemotrekaman");
-        intent.putExtra("lemot", "703");
+        Log.e(TAG, "onBufferingUpdate: StreamingService" + mp + " percent: " + percent);
+        Intent intent = new Intent("buffering");
+        intent.putExtra("percent", percent);
         sendBroadcast(intent);
     }
 

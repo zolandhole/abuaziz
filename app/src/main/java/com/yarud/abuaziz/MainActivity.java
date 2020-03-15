@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
     private DatabaseReference mAlamat = mRootRef.child("alamat");
     public String streamingURL, base_url, token_fcm;
     private TextView tv_messageError, tv_titlekajian, tv_pemateri, juduliklan, descriptioniklan;
-    private ProgressBar progressBarPlayer;
+    private ProgressBar progressBarPlayer, main_loading;
     private Boolean internetConnection = true;
     private CardView cv_nointernet;
     private Animation animFadeIn, animFadeOut;
@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         photoIklan = findViewById(R.id.photoiklan);
         juduliklan = findViewById(R.id.juduliklan);
         descriptioniklan = findViewById(R.id.descriptioniklan);
+        main_loading = findViewById(R.id.main_loading);
         Button btn_listkajian = findViewById(R.id.btn_listkajian);
 
         InternetAvailabilityChecker.init(this);
@@ -129,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         mInternetAvailabilityChecker.addInternetConnectivityListener(this);
 
 
+        main_loading.setVisibility(View.VISIBLE);
         daftarkanBroadcast();
         playStreaming();
         getDataChatting();
@@ -479,6 +481,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                         String activestreams = jsonObject.getString("activestreams");
                         Log.e(TAG, "result activestreams: "+ activestreams);
                         String test;
+                        main_loading.setVisibility(View.GONE);
                         if (!activestreams.equals("1")){
                             Toast.makeText(MainActivity.this, "Saat ini tidak ada Kajian Online Streaming", Toast.LENGTH_SHORT).show();
                             view_sukses.setVisibility(View.GONE);
@@ -612,6 +615,8 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
         if (doubleBackToExitPressedOnce) {
             super.onBackPressed();
             finish();
+            sendBroadcast(new Intent("exitrekaman"));
+            sendBroadcast(new Intent("exit"));
             return;
         }
         this.doubleBackToExitPressedOnce = true;
@@ -683,18 +688,6 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                     cv_nointernet.setAnimation(animFadeOut);
                 case "streamingError":
                     Log.e(TAG, "onReceive: ERROR");
-//                    countError = countError+1;
-//                    if (countError <= 2){
-//                        if (isMyServiceRunning()){
-//                            suksesLoading();
-//                            new ServiceStreaming().execute();
-//                        }
-//                    } else {
-//                        suksesStop();
-//                        Log.e(TAG, "onReceive: ERROR");
-//                        Toast.makeText(context, "Ada kesalahan, tidak dapat memutar Streaming, hubungi Developer", Toast.LENGTH_SHORT).show();
-//                    }
-//                    Log.e(TAG, "onReceive: " + countError);
                     break;
                 case "pausePlayer":
                     suksesStop();
@@ -706,6 +699,7 @@ public class MainActivity extends AppCompatActivity implements InternetConnectiv
                 case "JUDULKAJIAN":
                     tv_titlekajian.setText(intent.getStringExtra("judulKajian"));
                     tv_pemateri.setText(intent.getStringExtra("pemateri"));
+                    sendBroadcast(new Intent("exitrekaman"));
                     break;
                 case "PESANUSER":
                     Log.e(TAG, "onReceive: " + intent.getStringExtra("pesan"));

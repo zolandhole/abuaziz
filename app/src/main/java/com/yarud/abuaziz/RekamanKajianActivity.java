@@ -3,12 +3,19 @@ package com.yarud.abuaziz;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.yarud.abuaziz.adapters.AdapterRekaman;
 import com.yarud.abuaziz.models.ModelRekaman;
@@ -33,7 +40,17 @@ public class RekamanKajianActivity extends AppCompatActivity {
     private RelativeLayout relative_no_rekaman;
     private Button btn_back;
     private ModelRekaman listRekaman;
-
+    private ProgressBar list_rekaman_loading;
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String params = intent.getAction();
+            assert params != null;
+            if ("JUDULKAJIAN".equals(params)) {
+                finish();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +60,11 @@ public class RekamanKajianActivity extends AppCompatActivity {
         relative_no_rekaman = findViewById(R.id.relative_no_rekaman);
         recycler_rekaman = findViewById(R.id.recycler_rekaman);
         btn_back = findViewById(R.id.btn_back);
+        list_rekaman_loading = findViewById(R.id.list_rekaman_loading);
+        list_rekaman_loading.setVisibility(View.VISIBLE);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("JUDULKAJIAN");
+        registerReceiver(broadcastReceiver, filter);
     }
 
     @Override
@@ -60,6 +82,8 @@ public class RekamanKajianActivity extends AppCompatActivity {
                 @Override
                 public void gagal(String result) {
                     Log.e(TAG, "gagal: " + result);
+                    Toast.makeText(RekamanKajianActivity.this, "GAGAL MENGGAMBIL DATA, Silahkan ulangi lagi", Toast.LENGTH_SHORT).show();
+                    finish();
                 }
 
                 @Override
@@ -73,10 +97,8 @@ public class RekamanKajianActivity extends AppCompatActivity {
     private void setupListRekaman(JSONArray jsonArray) {
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-//        DBHandler dbHandler = new DBHandler(this);
         recyclerViewItems = new ArrayList<>();
         AdapterRekaman adapterRekaman = new AdapterRekaman(crateListData(jsonArray), this);
-        Log.e(TAG, "setupListRekaman: " + listRekaman.getNama());
         if (listRekaman != null){
             recycler_rekaman.setLayoutManager(linearLayoutManager);
             recycler_rekaman.setAdapter(adapterRekaman);
@@ -91,6 +113,7 @@ public class RekamanKajianActivity extends AppCompatActivity {
                 try {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
                     String idRekaman = jsonObject.getString("id");
+                    list_rekaman_loading.setVisibility(View.GONE);
                     if (!idRekaman.equals("0")){
                         String nama = jsonObject.getString("nama").substring(0, jsonObject.getString("nama").length() - 4);
                         ModelRekaman modelRekaman = new ModelRekaman(
@@ -100,7 +123,6 @@ public class RekamanKajianActivity extends AppCompatActivity {
                                 jsonObject.getString("status")
                         );
                         listRekaman = modelRekaman;
-                        Log.e(TAG, "crateListData: " + modelRekaman.getNama());
                         recyclerViewItems.add(modelRekaman);
                         relative_no_rekaman.setVisibility(View.GONE);
                         linear_list_rekaman.setVisibility(View.VISIBLE);
@@ -126,5 +148,11 @@ public class RekamanKajianActivity extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(broadcastReceiver);
     }
 }

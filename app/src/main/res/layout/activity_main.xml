@@ -23,7 +23,9 @@
         android:layout_height="2dp"
         android:background="@color/colorPrimary"/>
 
+<!--    Server Online-->
     <include
+        android:visibility="gone"
         android:id="@+id/view_sukses"
         android:layout_marginTop="8dp"
         android:layout_height="match_parent"
@@ -31,6 +33,7 @@
         android:layout_below="@id/separator"
         layout="@layout/view_sukses" />
 
+<!--    Server Offline-->
     <include
         android:visibility="gone"
         android:id="@+id/view_offline"
@@ -40,6 +43,15 @@
         android:layout_below="@id/judul_kajian"
         layout="@layout/view_offline" />
 
+<!--    LOADING DATA-->
+
+    <ProgressBar
+        android:id="@+id/main_loading"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+<!--    No Internet Connection-->
     <androidx.cardview.widget.CardView
         android:visibility="gone"
         android:id="@+id/cv_nointernet"
@@ -70,11 +82,12 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/robotocondensed"
             android:textSize="16sp"
-            android:textAlignment="center"
+            android:gravity="center"
             android:textColor="@android:color/white"
             android:text="@string/tidak_ada_koneksi_internert" />
     </androidx.cardview.widget.CardView>
 
+<!--    Notifikasi New Message-->
     <RelativeLayout
         android:visibility="gone"
         android:layout_marginBottom="70dp"
