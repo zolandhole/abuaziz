@@ -54,7 +54,6 @@ public class StreamingService extends Service implements
                         pauseMedia();
                         break;
                     case "start":
-//                        playMedia();
                         onPrepared(mediaPlayer);
                         break;
                     case "exit":

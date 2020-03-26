@@ -43,24 +43,28 @@ public class MessagingService extends FirebaseMessagingService {
     private void olahDataPushNotification(JSONObject jsonObject) {
         try {
             String topic = jsonObject.getString("topic");
-            if (topic.equals("JUDULKAJIAN")){
-                pengecekanNotifikasi(jsonObject);
-            } else if (topic.equals("PESANUSER")) {
-                Log.e(TAG, "olahDataPushNotification: "+ jsonObject);
-                Intent intent = new Intent("PESANUSER");
-                intent.putExtra("id", jsonObject.getString("id"));
-                intent.putExtra("jam", jsonObject.getString("jam"));
-                intent.putExtra("pesan", jsonObject.getString("pesan"));
-                intent.putExtra("photo", jsonObject.getString("photo"));
-                intent.putExtra("pengirim", jsonObject.getString("pengirim"));
-                sendBroadcast(intent);
-            } else if (topic.equals("UPDATEIKLAN")){
-                Log.e(TAG, "olahDataPushNotification: DATA IKLAN" + jsonObject.getString("photoiklan"));
-                Intent intenIklan = new Intent("UPDATEIKLAN");
-                intenIklan.putExtra("photoiklan", jsonObject.getString("photoiklan"));
-                intenIklan.putExtra("juduliklan", jsonObject.getString("juduliklan"));
-                intenIklan.putExtra("deskripsiiklan", jsonObject.getString("deskripsiiklan"));
-                sendBroadcast(intenIklan);
+            switch (topic) {
+                case "JUDULKAJIAN":
+                    pengecekanNotifikasi(jsonObject);
+                    break;
+                case "PESANUSER":
+                    Log.e(TAG, "olahDataPushNotification: " + jsonObject);
+                    Intent intent = new Intent("PESANUSER");
+                    intent.putExtra("id", jsonObject.getString("id"));
+                    intent.putExtra("jam", jsonObject.getString("jam"));
+                    intent.putExtra("pesan", jsonObject.getString("pesan"));
+                    intent.putExtra("photo", jsonObject.getString("photo"));
+                    intent.putExtra("pengirim", jsonObject.getString("pengirim"));
+                    sendBroadcast(intent);
+                    break;
+                case "UPDATEIKLAN":
+                    Log.e(TAG, "olahDataPushNotification: DATA IKLAN" + jsonObject.getString("photoiklan"));
+                    Intent intenIklan = new Intent("UPDATEIKLAN");
+                    intenIklan.putExtra("photoiklan", jsonObject.getString("photoiklan"));
+                    intenIklan.putExtra("juduliklan", jsonObject.getString("juduliklan"));
+                    intenIklan.putExtra("deskripsiiklan", jsonObject.getString("deskripsiiklan"));
+                    sendBroadcast(intenIklan);
+                    break;
             }
         } catch (JSONException e) {
             Log.e(TAG, "showNotification: CATCH " + e);
